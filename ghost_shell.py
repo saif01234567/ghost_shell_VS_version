@@ -1,4 +1,43 @@
 import os
+import datetime
+
+# =============== COLORS ===============
+RED = "\033[91m"
+GREEN = "\033[92m"
+YELLOW = "\033[93m"
+CYAN = "\033[96m"
+RESET = "\033[0m"
+
+# =============== ASCII BANNER ===============
+BANNER = f"""
+{CYAN}
+   ██████   ██   ██   ██████  ███████ ████████     ███████ ██   ██ ██      
+  ██        ██   ██  ██       ██         ██        ██       ██ ██  ██      
+  ██   ███  ███████  ██   ███ █████      ██        █████     ███   ██      
+  ██    ██  ██   ██  ██    ██ ██         ██        ██       ██ ██  ██      
+   ██████   ██   ██   ██████  ███████    ██        ███████ ██   ██ ███████  
+{RESET}
+"""
+
+# =============== HISTORY ===============
+history = []
+
+# =============== LOGGING ===============
+def log(cmd):
+    """Write commands to logs/shell.log"""
+    try:
+        os.makedirs("logs", exist_ok=True)
+        with open("logs/shell.log", "a") as f:
+            f.write(f"{datetime.datetime.now()} - {cmd}\n")
+    except:
+        pass
+
+def handle_history():
+    if not history:
+        return "No commands used yet."
+    return "\n".join(history)
+
+# =============== IMPORT MODULES ===============
 from commands.file_ops import list_files, change_dir, make_dir, read_file, create_file
 from commands.system_info import get_time, get_date, get_system_info
 from commands.explain_module import explain
@@ -7,8 +46,8 @@ def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def help_menu():
-    print("""
-Available Commands:
+    print(f"""
+{YELLOW}Available Commands:{RESET}
   help                   Show this menu
   ls                     List files
   cd <folder>            Change directory
@@ -20,17 +59,23 @@ Available Commands:
   date                   Show current date
   sysinfo                Show system info
   explain <topic>        Explain OS concept
+  history                Show command history
   clear                  Clear terminal
   exit                   Quit Ghost Shell
 """)
 
 def main():
     clear()
-    print("👻 Ghost Shell v1.0 — OS Project")
+    print(BANNER)
+    print(f"{GREEN}👻 Ghost Shell v2.0 — Enhanced Edition{RESET}")
     print("Type 'help' for commands.\n")
 
     while True:
-        command = input("ghost> ").strip()
+        command = input(f"{CYAN}ghost> {RESET}").strip()
+
+        # Save to history & logs
+        history.append(command)
+        log(command)
 
         if command == "help":
             help_menu()
@@ -72,6 +117,9 @@ def main():
                 print(explain(parts[1]))
             else:
                 print("Usage: explain <topic>")
+
+        elif command == "history":
+            print(handle_history())
 
         elif command == "clear":
             clear()
