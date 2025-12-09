@@ -11,26 +11,33 @@ RESET = "\033[0m"
 # =============== ASCII BANNER ===============
 BANNER = f"""
 {CYAN}
-   ██████   ██   ██   ██████  ███████ ████████     ███████ ██   ██ ██      
-  ██        ██   ██  ██       ██         ██        ██       ██ ██  ██      
-  ██   ███  ███████  ██   ███ █████      ██        █████     ███   ██      
-  ██    ██  ██   ██  ██    ██ ██         ██        ██       ██ ██  ██      
-   ██████   ██   ██   ██████  ███████    ██        ███████ ██   ██ ███████  
+   ██████   ██   ██   ██████  ███████ ████████ 
+  ██        ██   ██  ██       ██         ██    
+  ██   ███  ███████  ██   ███ █████      ██    
+  ██    ██  ██   ██  ██    ██ ██         ██    
+   ██████   ██   ██   ██████  ███████    ██    
+        G H O S T   S H E L L   T E R M I N A L
+
 {RESET}
 """
 
 # =============== HISTORY ===============
 history = []
 
-# =============== LOGGING ===============
-def log(cmd):
-    """Write commands to logs/shell.log"""
-    try:
-        os.makedirs("logs", exist_ok=True)
-        with open("logs/shell.log", "a") as f:
-            f.write(f"{datetime.datetime.now()} - {cmd}\n")
-    except:
-        pass
+# =============== PRO LOGGING SYSTEM ===============
+def log_command(cmd, output):
+    """Logs commands AND their output with timestamp."""
+    os.makedirs("logs", exist_ok=True)
+    path = "logs/commands.log"
+
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    with open(path, "a") as log:
+        log.write(f"[{timestamp}] COMMAND: {cmd}\n")
+        if output:
+            log.write(f"OUTPUT: {output}\n")
+        log.write("-" * 45 + "\n")
+
 
 def handle_history():
     if not history:
@@ -42,9 +49,12 @@ from commands.file_ops import list_files, change_dir, make_dir, read_file, creat
 from commands.system_info import get_time, get_date, get_system_info
 from commands.explain_module import explain
 
+
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
+
+# =============== HELP MENU ===============
 def help_menu():
     print(f"""
 {YELLOW}Available Commands:{RESET}
@@ -64,6 +74,8 @@ def help_menu():
   exit                   Quit Ghost Shell
 """)
 
+
+# =============== MAIN LOOP ===============
 def main():
     clear()
     print(BANNER)
@@ -72,64 +84,85 @@ def main():
 
     while True:
         command = input(f"{CYAN}ghost> {RESET}").strip()
+        output = ""
 
-        # Save to history & logs
-        history.append(command)
-        log(command)
+        # Save to history (only if not empty)
+        if command:
+            history.append(command)
 
+        # ========== COMMAND HANDLING ==========
         if command == "help":
+            output = None
             help_menu()
 
         elif command == "ls":
-            print(list_files())
+            output = list_files()
+            print(output)
 
         elif command.startswith("cd "):
             path = command.split(" ", 1)[1]
-            print(change_dir(path))
+            output = change_dir(path)
+            print(output)
 
         elif command.startswith("mkdir "):
             name = command.split(" ", 1)[1]
-            print(make_dir(name))
+            output = make_dir(name)
+            print(output)
 
         elif command.startswith("touch "):
             name = command.split(" ", 1)[1]
-            print(create_file(name))
+            output = create_file(name)
+            print(output)
 
         elif command.startswith("read "):
             name = command.split(" ", 1)[1]
-            print(read_file(name))
+            output = read_file(name)
+            print(output)
 
         elif command == "pwd":
-            print(os.getcwd())
+            output = os.getcwd()
+            print(output)
 
         elif command == "time":
-            print(get_time())
+            output = get_time()
+            print(output)
 
         elif command == "date":
-            print(get_date())
+            output = get_date()
+            print(output)
 
         elif command == "sysinfo":
-            print(get_system_info())
+            output = get_system_info()
+            print(output)
 
         elif command.startswith("explain"):
             parts = command.split(" ", 1)
             if len(parts) == 2:
-                print(explain(parts[1]))
+                output = explain(parts[1])
+                print(output)
             else:
-                print("Usage: explain <topic>")
+                output = "Usage: explain <topic>"
+                print(output)
 
         elif command == "history":
-            print(handle_history())
+            output = handle_history()
+            print(output)
 
         elif command == "clear":
             clear()
+            continue  # Don't log screen clear
 
         elif command == "exit":
             print("👋 Goodbye!")
             break
 
         else:
-            print("❌ Unknown command. Type 'help'.")
+            output = "❌ Unknown command. Type 'help'."
+            print(output)
+
+        # ========== LOG COMMAND + OUTPUT ==========
+        log_command(command, output)
+
 
 if __name__ == "__main__":
     main()

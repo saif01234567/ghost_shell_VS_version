@@ -1,0 +1,9 @@
+[2025-12-09 09:51:19] COMMAND: ls
+OUTPUT: .git
+commands
+ghost_shell.py
+logs
+README.md
+requirements.txt
+test
+---------------------------------------------
